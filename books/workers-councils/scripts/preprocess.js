@@ -14,7 +14,13 @@ function processPart(partPath) {
   const contents = fs.readFileSync(absolutePath).toString();
   console.log(`${partPath} : ${contents.length} characters`);
   const stripped = contents.replace(/(\r\n|\n|\r)/gm, "");
-  fs.writeFileSync(path.join(__dirname, "..", "processed", partPath), stripped);
+  return stripped;
 }
 
-parts.forEach(processPart);
+function writeProcessedPart(contents, part) {
+  fs.writeFileSync(path.join(__dirname, "..", "processed", part), contents);
+}
+
+const strippedParts = parts.map(processPart);
+
+strippedParts.forEach(writeProcessedPart);
