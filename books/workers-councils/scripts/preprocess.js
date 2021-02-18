@@ -5,6 +5,10 @@ function part(ppath) {
   return path.join(__dirname, "..", "parts", ppath);
 }
 
+function processed(name) {
+  return path.join(__dirname, "..", "processed", name);
+}
+
 const parts = fs.readdirSync(path.join(__dirname, "..", "parts"));
 
 console.log(`${parts.length} parts found.`);
@@ -14,13 +18,16 @@ function processPart(partPath) {
   const contents = fs.readFileSync(absolutePath).toString();
   console.log(`${partPath} : ${contents.length} characters`);
   const stripped = contents.replace(/(\r\n|\n|\r)/gm, "");
-  return stripped;
+  return [stripped, partPath];
 }
 
 function writeProcessedPart(contents, part) {
-  fs.writeFileSync(path.join(__dirname, "..", "processed", part), contents);
+  fs.writeFileSync(processed(part), contents);
 }
 
 const strippedParts = parts.map(processPart);
+strippedParts.forEach(([contents, part]) => writeProcessedPart(contents, part));
 
-strippedParts.forEach(writeProcessedPart);
+const fullText = strippedParts.map(([c]) => c).join(" ");
+
+fs.writeFileSync(processed("full.txt"), fullText);
