@@ -1,33 +1,37 @@
 const fs = require("fs");
 const path = require("path");
 
-function part(ppath) {
+function partPath(ppath) {
   return path.join(__dirname, "..", "parts", ppath);
 }
 
-function processed(name) {
+function processedPath(name) {
   return path.join(__dirname, "..", "processed", name);
 }
 
-const parts = fs.readdirSync(path.join(__dirname, "..", "parts"));
-
-console.log(`${parts.length} parts found.`);
-
-function processPart(partPath) {
-  const absolutePath = part(partPath);
+function processPart(ppath) {
+  const absolutePath = partPath(ppath);
   const contents = fs.readFileSync(absolutePath).toString();
-  console.log(`${partPath} : ${contents.length} characters`);
+  console.log(`${ppath} : ${contents.length} characters`);
   const stripped = contents.replace(/(\r\n|\n|\r)/gm, "");
-  return [stripped, partPath];
+  return [stripped, ppath];
 }
 
 function writeProcessedPart(contents, part) {
-  fs.writeFileSync(processed(part), contents);
+  fs.writeFileSync(processedPath(part), contents);
 }
 
-const strippedParts = parts.map(processPart);
-strippedParts.forEach(([contents, part]) => writeProcessedPart(contents, part));
+exports.preprocess = () => {
+  const parts = fs.readdirSync(path.join(__dirname, "..", "parts"));
 
-const fullText = strippedParts.map(([c]) => c).join(" ");
+  console.log(`${parts.length} parts found.`);
 
-fs.writeFileSync(processed("full.txt"), fullText);
+  const strippedParts = parts.map(processPart);
+  strippedParts.forEach(([contents, part]) => writeProcessedPart(contents, part));
+
+  const fullText = strippedParts.map(([c]) => c).join(" ");
+
+  fs.writeFileSync(processedPath("full.txt"), fullText);
+};
+
+exports.preprocess();
